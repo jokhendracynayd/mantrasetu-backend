@@ -17,7 +17,12 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "build:docker": "docker build -t mantrasetu .",
+    "build:docker:prod": "docker build -f Dockerfile -t mantrasetu:prod --target production .",
+    "deploy:staging": "docker-compose -f docker-compose.staging.yml up -d",
+    "deploy:prod": "docker-compose -f docker-compose.prod.yml up -d"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
