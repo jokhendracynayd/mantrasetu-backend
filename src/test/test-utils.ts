@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../database/prisma.service';
-import { UserRole } from '../../generated/prisma';
+import { UserRole } from '@prisma/client';
 
 export class TestUtils {
   static async createTestingModule(providers: any[] = []): Promise<TestingModule> {

@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsDateString, IsNumber, IsEnum, IsDecimal, Min, Max } from 'class-validator';
-import { BookingStatus, PaymentStatus } from '../../../generated/prisma';
+import { BookingStatus, PaymentStatus } from '@prisma/client';
 
 export class CreateBookingDto {
   @IsString()

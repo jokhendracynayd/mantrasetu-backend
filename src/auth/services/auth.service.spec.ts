@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '../../database/prisma.service';
 import { TestUtils } from '../../test/test-utils';
 import { RegisterDto, LoginDto, ChangePasswordDto } from '../dto/auth.dto';
-import { UserRole } from '../../../generated/prisma';
+import { UserRole } from '@prisma/client';
 
 describe('AuthService', () => {
   let service: AuthService;

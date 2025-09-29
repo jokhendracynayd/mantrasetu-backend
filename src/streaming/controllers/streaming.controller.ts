@@ -11,7 +11,7 @@ import {
 import { StreamingService } from '../services/streaming.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { UserContext } from '../../auth/interfaces/auth.interface';
+import type { UserContext } from '../../auth/interfaces/auth.interface';
 import { CreateMeetingDto, JoinMeetingDto, UpdateMeetingDto, EndMeetingDto, WebRTCSignalDto } from '../dto/streaming.dto';
 
 @Controller('streaming')

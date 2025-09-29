@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Razorpay from 'razorpay';
 import { PaymentGatewayResponse, RazorpayOrderResponse, RazorpayPaymentResponse, RefundResponse } from '../interfaces/payment.interface';
-import { PaymentMethod } from '../../../generated/prisma';
+import { PaymentMethod } from '@prisma/client';
 
 @Injectable()
 export class RazorpayService {

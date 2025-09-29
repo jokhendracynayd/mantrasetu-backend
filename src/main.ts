@@ -6,6 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppLogger } from './common/services/logger.service';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import compression from 'compression';
 
@@ -73,6 +74,41 @@ async function bootstrap() {
     // Set global prefix for all routes
     app.setGlobalPrefix('api/v1');
 
+    // Swagger configuration
+    const config = new DocumentBuilder()
+      .setTitle('MantraSetu API')
+      .setDescription('API documentation for MantraSetu - Spiritual Services Platform')
+      .setVersion('1.0.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Enter JWT token',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
+      .addTag('Authentication', 'User authentication and authorization')
+      .addTag('Users', 'User management and profile operations')
+      .addTag('Pandits', 'Pandit profiles and services')
+      .addTag('Bookings', 'Service booking management')
+      .addTag('Payments', 'Payment processing and management')
+      .addTag('Services', 'Service catalog and management')
+      .addTag('Notifications', 'Notification system')
+      .addTag('Admin', 'Administrative operations')
+      .addTag('Streaming', 'Live streaming services')
+      .addTag('Health', 'Health check endpoints')
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/v1/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    });
+
     // Log application startup
     appLogger.log({
       message: 'Application starting...',
@@ -91,6 +127,10 @@ async function bootstrap() {
     
     logger.log(
       `Application is running on: http://localhost:${port}/api/v1 in ${nodeEnv} mode`,
+    );
+    
+    logger.log(
+      `Swagger documentation available at: http://localhost:${port}/api/v1/docs`,
     );
   } catch (error) {
     // Use standard logger for bootstrap failures since Winston might not be available

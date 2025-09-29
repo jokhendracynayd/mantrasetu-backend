@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsNumber, IsBoolean, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { UserRole, ServiceCategory } from '../../../generated/prisma';
+import { UserRole, ServiceCategory } from '@prisma/client';
 
 export class AdminUserFilterDto {
   @IsOptional()

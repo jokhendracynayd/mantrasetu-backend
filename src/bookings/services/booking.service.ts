@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, BadRequestException, 
 import { PrismaService } from '../../database/prisma.service';
 import { CreateBookingDto, UpdateBookingDto, BookingSearchDto, BookingReviewDto, CancelBookingDto, RescheduleBookingDto } from '../dto/booking.dto';
 import { UserContext } from '../../auth/interfaces/auth.interface';
-import { BookingStatus, PaymentStatus, UserRole } from '../../../generated/prisma';
+import { BookingStatus, PaymentStatus, UserRole } from '@prisma/client';
 
 @Injectable()
 export class BookingService {

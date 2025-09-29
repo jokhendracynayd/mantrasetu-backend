@@ -17,7 +17,7 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { UserContext } from '../../auth/interfaces/auth.interface';
 import { CreateBookingDto, UpdateBookingDto, BookingSearchDto, BookingReviewDto, CancelBookingDto, RescheduleBookingDto } from '../dto/booking.dto';
-import { UserRole } from '../../../generated/prisma';
+import { UserRole } from '@prisma/client';
 
 @Controller('bookings')
 @UseGuards(JwtAuthGuard)

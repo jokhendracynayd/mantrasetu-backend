@@ -3,7 +3,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { RazorpayService } from './razorpay.service';
 import { CreatePaymentDto, ProcessPaymentDto, RefundPaymentDto, PaymentSearchDto } from '../dto/payment.dto';
 import { UserContext } from '../../auth/interfaces/auth.interface';
-import { PaymentStatus, UserRole } from '../../../generated/prisma';
+import { PaymentStatus, UserRole } from '@prisma/client';
 
 @Injectable()
 export class PaymentService {

@@ -4,7 +4,7 @@ import { BookingService } from './booking.service';
 import { PrismaService } from '../../database/prisma.service';
 import { TestUtils } from '../../test/test-utils';
 import { CreateBookingDto, CancelBookingDto, BookingReviewDto } from '../dto/booking.dto';
-import { BookingStatus, PaymentStatus } from '../../../generated/prisma';
+import { BookingStatus, PaymentStatus } from '@prisma/client';
 
 describe('BookingService', () => {
   let service: BookingService;

@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
     container_name: mantrasetu-app-prod
     restart: unless-stopped
     environment:
@@ -18,7 +17,7 @@ services:
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-30d}
       
       # Server Configuration
-      PORT: ${PORT:-3000}
+      PORT: ${PORT:-3033}
       NODE_ENV: production
       
       # CORS Configuration
@@ -50,9 +49,9 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_FILE: ${LOG_FILE:-logs/app-prod.log}
       
-      # Cache Configuration
-      CACHE_TYPE: ${CACHE_TYPE:-redis}
-      REDIS_URL: ${REDIS_URL}
+      # Cache Configuration (Using memory cache for simple deployment)
+      CACHE_TYPE: memory
+      # REDIS_URL: ${REDIS_URL}
       
       # Payment Configuration
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
@@ -69,46 +68,45 @@ services:
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
       TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
     ports:
-      - "${PORT:-3000}:${PORT:-3000}"
+      - "${PORT:-3033}:${PORT:-3033}"
     volumes:
       - ./logs:/app/logs
       - ./uploads:/app/uploads
     networks:
       - mantrasetu-network
-    depends_on:
-      redis:
-        condition: service_healthy
+    # depends_on:
+    #   redis:
+    #     condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-3000}/api/v1/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-3033}/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
-  # Redis Cache (Production)
-  redis:
-    image: redis:7-alpine
-    container_name: mantrasetu-redis-prod
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - mantrasetu-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # Redis Cache (Production) - Commented out for simple deployment
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: mantrasetu-redis-prod
+  #   restart: unless-stopped
+  #   command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - mantrasetu-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # Database Migration Service (Production)
   migrate:
     build:
       context: .
       dockerfile: Dockerfile
-      target: build
     container_name: mantrasetu-migrate-prod
     environment:
       DATABASE_URL: ${DATABASE_URL}
@@ -125,10 +123,10 @@ services:
       "
     restart: "no"
 
-volumes:
-  redis_data:
-    driver: local
-    name: mantrasetu_redis_prod_data
+# volumes:
+#   redis_data:
+#     driver: local
+#     name: mantrasetu_redis_prod_data
 
 networks:
   mantrasetu-network:

@@ -5,7 +5,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { RegisterDto, LoginDto, RefreshTokenDto, ChangePasswordDto } from '../dto/auth.dto';
 import { AuthResponse, TokenResponse, JwtPayload } from '../interfaces/auth.interface';
 import * as bcrypt from 'bcryptjs';
-import { UserRole } from '../../../generated/prisma';
+import { UserRole } from '@prisma/client';
 import { randomBytes } from 'crypto';
 
 @Injectable()

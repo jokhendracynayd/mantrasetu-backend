@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, BadRequestException }
 import { PrismaService } from '../../database/prisma.service';
 import { UpdateProfileDto, CreateAddressDto, UpdateAddressDto, UserPreferencesDto, EnrollInServiceDto, UpdateEnrollmentDto } from '../dto/user.dto';
 import { UserContext } from '../../auth/interfaces/auth.interface';
-import { UserRole } from '../../../generated/prisma';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class UserService {

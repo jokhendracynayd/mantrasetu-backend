@@ -9,8 +9,8 @@ export class ZoomService {
   private readonly baseUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.apiKey = this.configService.get<string>('ZOOM_API_KEY');
-    this.apiSecret = this.configService.get<string>('ZOOM_API_SECRET');
+    this.apiKey = this.configService.get<string>('ZOOM_API_KEY') || '';
+    this.apiSecret = this.configService.get<string>('ZOOM_API_SECRET') || '';
     this.baseUrl = 'https://api.zoom.us/v2';
   }
 

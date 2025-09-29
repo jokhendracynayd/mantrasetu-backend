@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsNumber, IsArray, IsBoolean, IsDecimal, IsEnum, Min, Max } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { ServiceCategory } from '../../../generated/prisma';
+import { ServiceCategory } from '@prisma/client';
 
 export class CreatePanditProfileDto {
   @IsString()

@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsNumberString, IsNumber, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { PaymentMethod, PaymentStatus } from '../../../generated/prisma';
+import { PaymentMethod, PaymentStatus } from '@prisma/client';
 
 export class CreatePaymentDto {
   @IsString()

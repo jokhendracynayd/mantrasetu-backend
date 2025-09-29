@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { UserRole, BookingStatus, PaymentStatus } from '../../../generated/prisma';
+import { UserRole, BookingStatus, PaymentStatus } from '@prisma/client';
 import { UserContext } from '../../auth/interfaces/auth.interface';
 import { AdminUserFilterDto, AdminPanditFilterDto, AdminServiceFilterDto } from '../dto/admin.dto';
 

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, BadRequestException, 
 import { PrismaService } from '../../database/prisma.service';
 import { CreatePanditProfileDto, UpdatePanditProfileDto, CreateAvailabilityDto, UpdateAvailabilityDto, PanditSearchDto } from '../dto/pandit.dto';
 import { UserContext } from '../../auth/interfaces/auth.interface';
-import { UserRole, BookingStatus } from '../../../generated/prisma';
+import { UserRole, BookingStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

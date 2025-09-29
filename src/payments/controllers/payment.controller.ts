@@ -19,7 +19,7 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { UserContext } from '../../auth/interfaces/auth.interface';
 import { CreatePaymentDto, ProcessPaymentDto, RefundPaymentDto, PaymentSearchDto, RazorpayWebhookDto } from '../dto/payment.dto';
-import { UserRole } from '../../../generated/prisma';
+import { UserRole } from '@prisma/client';
 
 @Controller('payments')
 @UseGuards(JwtAuthGuard)
