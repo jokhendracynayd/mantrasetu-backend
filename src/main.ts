@@ -42,7 +42,8 @@ async function bootstrap() {
       app.enableCors({
         origin: [
           configService.get('CORS_ORIGIN') || 'http://localhost:3035',
-          'http://localhost:3001' // Add frontend port
+          'http://localhost:3001', // Add frontend port
+          'https://mantrasetu-frontend.vercel.app' // Vercel frontend
         ],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
