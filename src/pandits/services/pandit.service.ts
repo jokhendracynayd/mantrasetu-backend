@@ -69,7 +69,7 @@ export class PanditService {
           lastName,
           phone,
           role: UserRole.PANDIT,
-          isEmailVerified: false, // Will need email verification
+          isVerified: false, // Will need email verification
         },
       });
 
@@ -107,7 +107,7 @@ export class PanditService {
     });
 
     return {
-      message: 'Pandit registration successful. Please verify your email and wait for profile approval.',
+      message: 'Registration successful! Please wait while we verify your details. You will receive an email confirmation once your profile is approved.',
       user: result.user,
       pandit: result.pandit,
     };

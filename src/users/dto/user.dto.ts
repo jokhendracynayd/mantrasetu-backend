@@ -121,3 +121,26 @@ export class UserPreferencesDto {
   @IsString({ each: true })
   servicePreferences?: string[];
 }
+
+export class EnrollInServiceDto {
+  @IsString()
+  serviceId: string;
+
+  @IsOptional()
+  preferences?: {
+    preferredLanguage?: string;
+    preferredTimeSlot?: string;
+    virtualOrInPerson?: 'virtual' | 'in-person' | 'both';
+    specialRequirements?: string;
+  };
+}
+
+export class UpdateEnrollmentDto {
+  @IsOptional()
+  preferences?: {
+    preferredLanguage?: string;
+    preferredTimeSlot?: string;
+    virtualOrInPerson?: 'virtual' | 'in-person' | 'both';
+    specialRequirements?: string;
+  };
+}

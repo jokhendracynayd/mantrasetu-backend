@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { UpdateProfileDto, CreateAddressDto, UpdateAddressDto, UserPreferencesDto } from '../dto/user.dto';
+import { UpdateProfileDto, CreateAddressDto, UpdateAddressDto, UserPreferencesDto, EnrollInServiceDto, UpdateEnrollmentDto } from '../dto/user.dto';
 import { UserContext } from '../../auth/interfaces/auth.interface';
 import { UserRole } from '../../../generated/prisma';
 
@@ -401,6 +401,320 @@ export class UserService {
       completedBookings,
       totalSpent: totalSpent._sum.amount || 0,
       totalReviews,
+    };
+  }
+
+  // Service Enrollment Methods
+  async getEnrolledServices(userId: string) {
+    const enrollments = await this.prisma.serviceEnrollment.findMany({
+      where: {
+        userId,
+        status: 'active',
+      },
+      include: {
+        service: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            category: true,
+            subcategory: true,
+            durationMinutes: true,
+            basePrice: true,
+            isVirtual: true,
+            requiresSamagri: true,
+            imageUrl: true,
+            tags: true,
+          },
+        },
+      },
+      orderBy: {
+        enrolledAt: 'desc',
+      },
+    });
+
+    return {
+      enrollments: enrollments.map(enrollment => ({
+        id: enrollment.id,
+        userId: enrollment.userId,
+        serviceId: enrollment.serviceId,
+        service: enrollment.service,
+        enrolledAt: enrollment.enrolledAt,
+        status: enrollment.status,
+        preferences: enrollment.preferences,
+        progress: enrollment.progress || {
+          completedBookings: 0,
+          totalBookings: 0,
+        },
+      })),
+    };
+  }
+
+  async enrollInService(userId: string, enrollInServiceDto: EnrollInServiceDto) {
+    const { serviceId, preferences } = enrollInServiceDto;
+
+    // Check if user exists
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if service exists and is active
+    const service = await this.prisma.service.findUnique({
+      where: { id: serviceId },
+    });
+
+    if (!service) {
+      throw new NotFoundException('Service not found');
+    }
+
+    if (!service.isActive) {
+      throw new BadRequestException('Service is not currently available');
+    }
+
+    // Check if user is already enrolled in this service
+    const existingEnrollment = await this.prisma.serviceEnrollment.findUnique({
+      where: {
+        userId_serviceId: {
+          userId,
+          serviceId,
+        },
+      },
+    });
+
+    if (existingEnrollment) {
+      if (existingEnrollment.status === 'active') {
+        throw new ConflictException('User is already enrolled in this service');
+      } else {
+        // Reactivate existing enrollment
+        const reactivatedEnrollment = await this.prisma.serviceEnrollment.update({
+          where: { id: existingEnrollment.id },
+          data: {
+            status: 'active',
+            preferences: preferences || {},
+            updatedAt: new Date(),
+          },
+          include: {
+            service: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                category: true,
+                subcategory: true,
+                durationMinutes: true,
+                basePrice: true,
+                isVirtual: true,
+                requiresSamagri: true,
+                imageUrl: true,
+                tags: true,
+              },
+            },
+          },
+        });
+
+        return {
+          success: true,
+          message: `Successfully re-enrolled in ${service.name}`,
+          enrollment: reactivatedEnrollment,
+          enrollmentId: reactivatedEnrollment.id,
+        };
+      }
+    }
+
+    // Create new enrollment
+    const enrollment = await this.prisma.serviceEnrollment.create({
+      data: {
+        userId,
+        serviceId,
+        status: 'active',
+        preferences: preferences || {},
+        progress: {
+          completedBookings: 0,
+          totalBookings: 0,
+        },
+      },
+      include: {
+        service: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            category: true,
+            subcategory: true,
+            durationMinutes: true,
+            basePrice: true,
+            isVirtual: true,
+            requiresSamagri: true,
+            imageUrl: true,
+            tags: true,
+          },
+        },
+      },
+    });
+
+    // Create notification
+    await this.prisma.notification.create({
+      data: {
+        userId,
+        type: 'IN_APP',
+        title: 'Service Enrollment Confirmed',
+        message: `You have successfully enrolled in ${service.name}`,
+        status: 'PENDING',
+        data: {
+          serviceId,
+          enrollmentId: enrollment.id,
+          serviceName: service.name,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: `Successfully enrolled in ${service.name}`,
+      enrollment: enrollment,
+      enrollmentId: enrollment.id,
+    };
+  }
+
+  async updateEnrollment(userId: string, enrollmentId: string, updateEnrollmentDto: UpdateEnrollmentDto) {
+    const enrollment = await this.prisma.serviceEnrollment.findFirst({
+      where: {
+        id: enrollmentId,
+        userId,
+        status: 'active',
+      },
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException('Active enrollment not found');
+    }
+
+    const updatedEnrollment = await this.prisma.serviceEnrollment.update({
+      where: { id: enrollmentId },
+      data: {
+        preferences: updateEnrollmentDto.preferences || enrollment.preferences,
+        updatedAt: new Date(),
+      },
+      include: {
+        service: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            category: true,
+            subcategory: true,
+            durationMinutes: true,
+            basePrice: true,
+            isVirtual: true,
+            requiresSamagri: true,
+            imageUrl: true,
+            tags: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Enrollment updated successfully',
+      enrollment: updatedEnrollment,
+    };
+  }
+
+  async unenrollFromService(userId: string, enrollmentId: string) {
+    const enrollment = await this.prisma.serviceEnrollment.findFirst({
+      where: {
+        id: enrollmentId,
+        userId,
+        status: 'active',
+      },
+      include: {
+        service: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException('Active enrollment not found');
+    }
+
+    await this.prisma.serviceEnrollment.update({
+      where: { id: enrollmentId },
+      data: {
+        status: 'cancelled',
+        updatedAt: new Date(),
+      },
+    });
+
+    // Create notification
+    await this.prisma.notification.create({
+      data: {
+        userId,
+        type: 'IN_APP',
+        title: 'Service Enrollment Cancelled',
+        message: `You have unenrolled from ${enrollment.service.name}`,
+        status: 'PENDING',
+        data: {
+          serviceId: enrollment.serviceId,
+          enrollmentId,
+          serviceName: enrollment.service.name,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: `Successfully unenrolled from ${enrollment.service.name}`,
+    };
+  }
+
+  async getEnrollmentHistory(userId: string) {
+    const enrollments = await this.prisma.serviceEnrollment.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        service: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            category: true,
+            subcategory: true,
+            durationMinutes: true,
+            basePrice: true,
+            isVirtual: true,
+            requiresSamagri: true,
+            imageUrl: true,
+            tags: true,
+          },
+        },
+      },
+      orderBy: {
+        enrolledAt: 'desc',
+      },
+    });
+
+    return {
+      enrollments: enrollments.map(enrollment => ({
+        id: enrollment.id,
+        userId: enrollment.userId,
+        serviceId: enrollment.serviceId,
+        service: enrollment.service,
+        enrolledAt: enrollment.enrolledAt,
+        status: enrollment.status,
+        preferences: enrollment.preferences,
+        progress: enrollment.progress,
+        createdAt: enrollment.createdAt,
+        updatedAt: enrollment.updatedAt,
+      })),
     };
   }
 }

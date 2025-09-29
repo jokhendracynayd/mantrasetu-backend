@@ -15,6 +15,7 @@ import {
   BadRequestException
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 import { PanditService } from '../services/pandit.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -80,6 +81,22 @@ export class PanditController {
     { name: 'idProof', maxCount: 1 },
     { name: 'photo', maxCount: 1 },
   ], {
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        const uploadPath = 'uploads/pandits';
+        // Create directory if it doesn't exist
+        const fs = require('fs');
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = file.originalname.split('.').pop();
+        cb(null, `${file.fieldname}-${uniqueSuffix}.${ext}`);
+      },
+    }),
     limits: {
       fileSize: 5 * 1024 * 1024, // 5MB limit
     },
@@ -106,6 +123,22 @@ export class PanditController {
     { name: 'idProof', maxCount: 1 },
     { name: 'photo', maxCount: 1 },
   ], {
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        const uploadPath = 'uploads/pandits';
+        // Create directory if it doesn't exist
+        const fs = require('fs');
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = file.originalname.split('.').pop();
+        cb(null, `${file.fieldname}-${uniqueSuffix}.${ext}`);
+      },
+    }),
     limits: {
       fileSize: 5 * 1024 * 1024, // 5MB limit
     },

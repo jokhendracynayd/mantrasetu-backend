@@ -17,7 +17,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { UserContext } from '../../auth/interfaces/auth.interface';
-import { UpdateProfileDto, CreateAddressDto, UpdateAddressDto } from '../dto/user.dto';
+import { UpdateProfileDto, CreateAddressDto, UpdateAddressDto, EnrollInServiceDto, UpdateEnrollmentDto } from '../dto/user.dto';
 import { UserRole } from '../../../generated/prisma';
 
 @Controller('users')
@@ -121,5 +121,41 @@ export class UserController {
     @CurrentUser() currentUser: UserContext,
   ) {
     return this.userService.deleteUser(userId, currentUser);
+  }
+
+  // Service Enrollment endpoints
+  @Get('enrolled-services')
+  async getEnrolledServices(@CurrentUser() user: UserContext) {
+    return this.userService.getEnrolledServices(user.userId);
+  }
+
+  @Post('enroll-service')
+  async enrollInService(
+    @Body() enrollInServiceDto: EnrollInServiceDto,
+    @CurrentUser() user: UserContext,
+  ) {
+    return this.userService.enrollInService(user.userId, enrollInServiceDto);
+  }
+
+  @Put('enrollments/:enrollmentId')
+  async updateEnrollment(
+    @Param('enrollmentId') enrollmentId: string,
+    @Body() updateEnrollmentDto: UpdateEnrollmentDto,
+    @CurrentUser() user: UserContext,
+  ) {
+    return this.userService.updateEnrollment(user.userId, enrollmentId, updateEnrollmentDto);
+  }
+
+  @Delete('enrollments/:enrollmentId')
+  async unenrollFromService(
+    @Param('enrollmentId') enrollmentId: string,
+    @CurrentUser() user: UserContext,
+  ) {
+    return this.userService.unenrollFromService(user.userId, enrollmentId);
+  }
+
+  @Get('enrollment-history')
+  async getEnrollmentHistory(@CurrentUser() user: UserContext) {
+    return this.userService.getEnrollmentHistory(user.userId);
   }
 }

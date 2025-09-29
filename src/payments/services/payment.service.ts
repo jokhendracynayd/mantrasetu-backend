@@ -47,7 +47,12 @@ export class PaymentService {
     });
 
     if (existingPayment) {
-      throw new BadRequestException('Payment already exists for this booking');
+      // Return existing payment instead of throwing error
+      return {
+        success: true,
+        data: existingPayment,
+        message: 'Payment already exists for this booking',
+      };
     }
 
     // Create payment record

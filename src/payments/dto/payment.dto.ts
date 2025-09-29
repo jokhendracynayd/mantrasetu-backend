@@ -1,11 +1,13 @@
-import { IsString, IsOptional, IsEnum, IsDecimal, IsNumber, Min } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNumberString, IsNumber, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { PaymentMethod, PaymentStatus } from '../../../generated/prisma';
 
 export class CreatePaymentDto {
   @IsString()
   bookingId: string;
 
-  @IsDecimal()
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber({}, { message: 'amount is not a valid decimal number.' })
   @Min(0)
   amount: number;
 
@@ -42,7 +44,8 @@ export class RefundPaymentDto {
   @IsString()
   paymentId: string;
 
-  @IsDecimal()
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber({}, { message: 'refundAmount is not a valid decimal number.' })
   @Min(0)
   refundAmount: number;
 

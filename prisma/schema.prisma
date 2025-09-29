@@ -43,6 +43,7 @@ enum PaymentMethod {
   NET_BANKING
   WALLET
   CASH
+  ONLINE
 }
 
 enum ServiceCategory {
@@ -99,6 +100,7 @@ model User {
   addresses         Address[]
   reviews           Review[]
   refreshTokens     RefreshToken[]
+  serviceEnrollments ServiceEnrollment[]
 
   @@map("users")
 }
@@ -154,6 +156,7 @@ model Service {
   // Relations
   bookings        Booking[]
   samagriKits     SamagriKit[]
+  serviceEnrollments ServiceEnrollment[]
 
   @@map("services")
 }
@@ -336,5 +339,24 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+model ServiceEnrollment {
+  id              String   @id @default(cuid())
+  userId          String
+  serviceId       String
+  enrolledAt      DateTime @default(now())
+  status          String   @default("active") // active, completed, cancelled
+  preferences     Json?    // Store user preferences for the service
+  progress        Json?    // Store progress tracking data
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, serviceId])
+  @@map("service_enrollments")
 }
 
