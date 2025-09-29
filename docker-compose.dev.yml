@@ -79,7 +79,7 @@ services:
     container_name: mantrasetu-app-dev
     environment:
       NODE_ENV: development
-      PORT: 3033
+      PORT: 3035
       CACHE_TYPE: memory
       # REDIS_URL: redis://redis:6379
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
@@ -87,7 +87,7 @@ services:
       REFRESH_TOKEN_SECRET: your-super-secret-refresh-key-change-in-production
       REFRESH_TOKEN_EXPIRES_IN: 30d
     ports:
-      - "3033:3033"
+      - "3035:3035"
     volumes:
       - ./src:/app/src
       - ./logs:/app/logs

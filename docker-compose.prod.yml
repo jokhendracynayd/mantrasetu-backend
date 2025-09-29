@@ -17,7 +17,7 @@ services:
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-30d}
       
       # Server Configuration
-      PORT: ${PORT:-3033}
+      PORT: ${PORT:-3035}
       NODE_ENV: production
       
       # CORS Configuration
@@ -68,7 +68,7 @@ services:
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
       TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
     ports:
-      - "${PORT:-3033}:${PORT:-3033}"
+      - "${PORT:-3035}:${PORT:-3035}"
     volumes:
       - ./logs:/app/logs
       - ./uploads:/app/uploads
@@ -78,7 +78,7 @@ services:
     #   redis:
     #     condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-3033}/api/v1/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-3035}/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3

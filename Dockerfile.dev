@@ -33,7 +33,7 @@ RUN npm install ts-node-dev --save-dev --silent
 RUN npx prisma generate
 
 # Expose port
-EXPOSE 3033
+EXPOSE 3035
 
 # Start development server
 CMD ["npm", "run", "start:dev"]
