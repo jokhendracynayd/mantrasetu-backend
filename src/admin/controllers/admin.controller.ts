@@ -17,7 +17,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { UserRole } from '@prisma/client';
-import { UserContext } from '../../auth/interfaces/auth.interface';
+import type { UserContext } from '../../auth/interfaces/auth.interface';
 import { AdminUserFilterDto, AdminPanditFilterDto, UpdateUserStatusDto, AdminServiceFilterDto } from '../dto/admin.dto';
 
 @Controller('admin')

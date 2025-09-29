@@ -120,9 +120,9 @@ export class StreamingService {
       topic: 'Virtual Pooja Session',
       startTime: booking.bookingDate,
       duration: booking.durationMinutes,
-      password: booking.meetingPassword,
-      joinUrl: booking.meetingLink,
-      hostUrl: booking.meetingLink,
+      password: booking.meetingPassword || undefined,
+      joinUrl: booking.meetingLink || '',
+      hostUrl: booking.meetingLink || '',
       status: booking.status === 'IN_PROGRESS' ? 'live' : 'scheduled',
       provider: 'webrtc',
     };

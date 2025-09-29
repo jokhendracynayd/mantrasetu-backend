@@ -872,7 +872,7 @@ export class PanditService {
     const bookedTimes = existingBookings.map(booking => booking.bookingTime);
 
     // Generate time slots based on availability
-    const timeSlots = [];
+    const timeSlots: Array<{ time: string; available: boolean }> = [];
     
     for (const av of availability) {
       const startTime = av.startTime.split(':');
@@ -931,16 +931,6 @@ export class PanditService {
               firstName: true,
               lastName: true,
               profileImageUrl: true,
-            },
-          },
-          booking: {
-            select: {
-              id: true,
-              service: {
-                select: {
-                  name: true,
-                },
-              },
             },
           },
         },

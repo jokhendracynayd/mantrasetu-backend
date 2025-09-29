@@ -121,12 +121,12 @@ export class AdminService {
       totalUsers,
       totalPandits,
       totalBookings,
-      totalRevenue: revenueData._sum.amount || 0,
+      totalRevenue: Number(revenueData._sum.amount) || 0,
       pendingBookings,
       completedBookings,
       activeUsers,
       verifiedPandits,
-      monthlyRevenue: monthlyRevenueData._sum.amount || 0,
+      monthlyRevenue: Number(monthlyRevenueData._sum.amount) || 0,
       userGrowth: Math.round(userGrowth * 100) / 100,
     };
   }
@@ -158,12 +158,12 @@ export class AdminService {
       where.role = role;
     }
 
-    if (isActive !== undefined && isActive !== '') {
-      where.isActive = isActive === 'true' || isActive === true;
+    if (isActive !== undefined) {
+      where.isActive = isActive;
     }
 
-    if (isVerified !== undefined && isVerified !== '') {
-      where.isVerified = isVerified === 'true' || isVerified === true;
+    if (isVerified !== undefined) {
+      where.isVerified = isVerified;
     }
 
     const skip = (page - 1) * limit;
@@ -239,8 +239,6 @@ export class AdminService {
             id: true,
             isVerified: true,
             specialization: true,
-            experience: true,
-            languages: true,
             bio: true,
             hourlyRate: true,
             rating: true,
@@ -280,7 +278,6 @@ export class AdminService {
             id: true,
             amount: true,
             status: true,
-            method: true,
             createdAt: true,
           },
         },
@@ -376,12 +373,12 @@ export class AdminService {
       ];
     }
 
-    if (isVerified !== undefined && isVerified !== '') {
-      where.isVerified = isVerified === 'true' || isVerified === true;
+    if (isVerified !== undefined) {
+      where.isVerified = isVerified;
     }
 
-    if (isActive !== undefined && isActive !== '') {
-      where.isAvailable = isActive === 'true' || isActive === true;
+    if (isActive !== undefined) {
+      where.isAvailable = isActive;
     }
 
     const skip = (page - 1) * limit;
@@ -851,10 +848,10 @@ export class AdminService {
         panditName: pandit ? `${pandit.user.firstName} ${pandit.user.lastName}` : 'Unknown',
         specialization: pandit?.specialization || 'Unknown',
         bookings: stat._count.id,
-        revenue: stat._sum.totalAmount || 0,
-        rating: pandit?.rating || 0,
+        revenue: Number(stat._sum.totalAmount) || 0,
+        rating: Number(pandit?.rating) || 0,
       };
-    }).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+    }).sort((a, b) => Number(b.revenue) - Number(a.revenue)).slice(0, 10);
   }
 
   private async getMonthlyMetrics() {
@@ -923,8 +920,10 @@ export class AdminService {
 
     const userGrowth = lastMonthUsers > 0 ? ((thisMonthUsers - lastMonthUsers) / lastMonthUsers) * 100 : 0;
     const bookingGrowth = lastMonthBookings > 0 ? ((thisMonthBookings - lastMonthBookings) / lastMonthBookings) * 100 : 0;
-    const revenueGrowth = (lastMonthRevenue._sum.amount || 0) > 0 ? 
-      (((thisMonthRevenue._sum.amount || 0) - (lastMonthRevenue._sum.amount || 0)) / (lastMonthRevenue._sum.amount || 0)) * 100 : 0;
+    const lastMonthAmount = Number(lastMonthRevenue._sum.amount) || 0;
+    const thisMonthAmount = Number(thisMonthRevenue._sum.amount) || 0;
+    const revenueGrowth = lastMonthAmount > 0 ? 
+      ((thisMonthAmount - lastMonthAmount) / lastMonthAmount) * 100 : 0;
 
     return {
       userGrowth: Math.round(userGrowth * 100) / 100,
@@ -1055,7 +1054,7 @@ export class AdminService {
       // Log the action
       await this.prisma.auditLog.create({
         data: {
-          userId: currentUser.id,
+          userId: currentUser.userId,
           action: 'CREATE_SERVICE',
           resource: 'Service',
           resourceId: service.id,
@@ -1081,7 +1080,7 @@ export class AdminService {
       // Log the action
       await this.prisma.auditLog.create({
         data: {
-          userId: currentUser.id,
+          userId: currentUser.userId,
           action: 'UPDATE_SERVICE',
           resource: 'Service',
           resourceId: serviceId,
@@ -1107,7 +1106,7 @@ export class AdminService {
       // Log the action
       await this.prisma.auditLog.create({
         data: {
-          userId: currentUser.id,
+          userId: currentUser.userId,
           action: 'DELETE_SERVICE',
           resource: 'Service',
           resourceId: serviceId,

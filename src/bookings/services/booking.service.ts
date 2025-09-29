@@ -175,6 +175,7 @@ export class BookingService {
             id: true,
             user: {
               select: {
+                id: true,
                 firstName: true,
                 lastName: true,
                 email: true,
@@ -230,7 +231,7 @@ export class BookingService {
     // Check if user has access to this booking
     const hasAccess = 
       booking.userId === currentUser.userId ||
-      booking.pandit.userId === currentUser.userId ||
+      booking.pandit.user.id === currentUser.userId ||
       currentUser.role === UserRole.ADMIN ||
       currentUser.role === UserRole.SUPER_ADMIN;
 
@@ -749,8 +750,8 @@ export class BookingService {
     }
 
     // Generate meeting link for virtual services
-    let meetingLink = null;
-    let meetingPassword = null;
+    let meetingLink: string | null = null;
+    let meetingPassword: string | null = null;
 
     if (booking.service.isVirtual) {
       // TODO: Integrate with video streaming service (Zoom, WebRTC, etc.)

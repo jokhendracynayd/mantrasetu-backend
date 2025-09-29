@@ -61,7 +61,7 @@ export class RazorpayService {
         return {
           success: true,
           transactionId: payment.id,
-          amount: payment.amount / 100, // Convert from paise to rupees
+          amount: Number(payment.amount) / 100, // Convert from paise to rupees
           currency: payment.currency,
           status: payment.status,
           gatewayResponse: payment,
@@ -86,7 +86,7 @@ export class RazorpayService {
       return {
         success: true,
         transactionId: payment.id,
-        amount: payment.amount / 100,
+        amount: Number(payment.amount) / 100,
         currency: payment.currency,
         status: payment.status,
         gatewayResponse: payment,
@@ -103,10 +103,17 @@ export class RazorpayService {
     try {
       const refund = await this.razorpay.payments.refund(paymentId, {
         amount: amount * 100, // Convert to paise
-        notes: notes || 'Refund from MantraSetu',
+        notes: { reason: notes || 'Refund from MantraSetu' },
       });
 
-      return refund as RefundResponse;
+      return {
+        id: refund.id,
+        amount: Number(refund.amount) / 100,
+        currency: refund.currency,
+        status: refund.status,
+        receipt: refund.receipt || '',
+        created_at: refund.created_at,
+      } as RefundResponse;
     } catch (error) {
       throw new BadRequestException(`Failed to process refund: ${error.message}`);
     }

@@ -15,7 +15,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { UserContext } from '../../auth/interfaces/auth.interface';
+import type { UserContext } from '../../auth/interfaces/auth.interface';
 import { CreateBookingDto, UpdateBookingDto, BookingSearchDto, BookingReviewDto, CancelBookingDto, RescheduleBookingDto } from '../dto/booking.dto';
 import { UserRole } from '@prisma/client';
 

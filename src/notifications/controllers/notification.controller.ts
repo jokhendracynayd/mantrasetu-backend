@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { UserContext } from '../../auth/interfaces/auth.interface';
+import type { UserContext } from '../../auth/interfaces/auth.interface';
 import { CreateNotificationDto, SendNotificationDto, UpdateNotificationDto, NotificationSearchDto } from '../dto/notification.dto';
 import { UserRole } from '@prisma/client';
 

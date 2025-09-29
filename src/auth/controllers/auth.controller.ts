@@ -3,7 +3,7 @@ import { AuthService } from '../services/auth.service';
 import { RegisterDto, LoginDto, RefreshTokenDto, ChangePasswordDto } from '../dto/auth.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
-import { UserContext } from '../interfaces/auth.interface';
+import type { UserContext } from '../interfaces/auth.interface';
 import { AuthResponse, TokenResponse } from '../interfaces/auth.interface';
 
 @Controller('auth')

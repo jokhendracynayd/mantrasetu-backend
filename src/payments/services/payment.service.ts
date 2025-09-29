@@ -92,7 +92,7 @@ export class PaymentService {
           where: { id: payment.id },
           data: {
             gatewayTransactionId: order.id,
-            gatewayResponse: order,
+            gatewayResponse: order as any,
           },
         });
 
@@ -251,7 +251,7 @@ export class PaymentService {
         refundedAt: new Date(),
         status: refundAmount === Number(payment.amount) ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED,
         gatewayResponse: {
-          ...payment.gatewayResponse,
+          ...(payment.gatewayResponse as any),
           refund: refundResult,
         },
       },
@@ -525,7 +525,7 @@ export class PaymentService {
           refundedAt: new Date(),
           status: refund.amount === paymentRecord.amount ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED,
           gatewayResponse: {
-            ...paymentRecord.gatewayResponse,
+            ...(paymentRecord.gatewayResponse as any),
             refund,
           },
         },

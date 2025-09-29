@@ -564,11 +564,6 @@ export class UserService {
         title: 'Service Enrollment Confirmed',
         message: `You have successfully enrolled in ${service.name}`,
         status: 'PENDING',
-        data: {
-          serviceId,
-          enrollmentId: enrollment.id,
-          serviceName: service.name,
-        },
       },
     });
 
@@ -596,7 +591,7 @@ export class UserService {
     const updatedEnrollment = await this.prisma.serviceEnrollment.update({
       where: { id: enrollmentId },
       data: {
-        preferences: updateEnrollmentDto.preferences || enrollment.preferences,
+        preferences: (updateEnrollmentDto.preferences || enrollment.preferences) as any,
         updatedAt: new Date(),
       },
       include: {
@@ -661,11 +656,6 @@ export class UserService {
         title: 'Service Enrollment Cancelled',
         message: `You have unenrolled from ${enrollment.service.name}`,
         status: 'PENDING',
-        data: {
-          serviceId: enrollment.serviceId,
-          enrollmentId,
-          serviceName: enrollment.service.name,
-        },
       },
     });
 

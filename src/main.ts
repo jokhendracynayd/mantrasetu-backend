@@ -41,7 +41,7 @@ async function bootstrap() {
     if (configService.get('CORS_ENABLED') === 'true') {
       app.enableCors({
         origin: [
-          configService.get('CORS_ORIGIN') || 'http://localhost:3000',
+          configService.get('CORS_ORIGIN') || 'http://localhost:3033',
           'http://localhost:3001' // Add frontend port
         ],
         credentials: true,
@@ -68,7 +68,7 @@ async function bootstrap() {
     // Set global logging interceptor
     app.useGlobalInterceptors(new LoggingInterceptor(appLogger));
 
-    const port = configService.get('PORT') || 3000;
+    const port = configService.get('PORT') || 3033;
     const nodeEnv = configService.get('NODE_ENV') || 'development';
 
     // Set global prefix for all routes
