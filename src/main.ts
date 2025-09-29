@@ -1,8 +1,13 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppLogger } from './common/services/logger.service';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import helmet from 'helmet';
+import compression from 'compression';
 
 async function bootstrap() {
   try {
@@ -10,6 +15,8 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
       bufferLogs: true,
     });
+
+    const configService = app.get(ConfigService);
 
     // Use Winston for logging
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
@@ -21,11 +28,47 @@ async function bootstrap() {
     const appLoggerFactory = await app.resolve(AppLogger);
     const appLogger = appLoggerFactory.setContext('Bootstrap');
 
+    // Security middleware
+    if (configService.get('HELMET_ENABLED') === 'true') {
+      app.use(helmet());
+    }
+
+    // Compression middleware
+    app.use(compression());
+
+    // CORS configuration
+    if (configService.get('CORS_ENABLED') === 'true') {
+      app.enableCors({
+        origin: [
+          configService.get('CORS_ORIGIN') || 'http://localhost:3000',
+          'http://localhost:3001' // Add frontend port
+        ],
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      });
+    }
+
+    // Global validation pipe
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      }),
+    );
+
+    // Global exception filter
+    app.useGlobalFilters(new HttpExceptionFilter());
+
     // Set global logging interceptor
     app.useGlobalInterceptors(new LoggingInterceptor(appLogger));
 
-    const port = process.env.PORT ?? 3000;
-    const nodeEnv = process.env.NODE_ENV || 'development';
+    const port = configService.get('PORT') || 3000;
+    const nodeEnv = configService.get('NODE_ENV') || 'development';
 
     // Set global prefix for all routes
     app.setGlobalPrefix('api/v1');
@@ -35,7 +78,7 @@ async function bootstrap() {
       message: 'Application starting...',
       port,
       environment: nodeEnv,
-      version: process.env.APP_VERSION || '1.0.0',
+      version: configService.get('APP_VERSION') || '1.0.0',
     });
 
     await app.listen(port);

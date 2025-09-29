@@ -1,98 +1,306 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MantraSetu Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A comprehensive backend API for MantraSetu - Digital Spiritual Platform built with NestJS, TypeScript, and PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Features
 
-## Description
+### Core Services
+- **Authentication & Authorization** - JWT-based auth with role-based access control
+- **User Management** - Profile management, preferences, and address handling
+- **Pandit Management** - Onboarding, verification, and availability management
+- **Booking System** - Service scheduling, availability checking, and booking management
+- **Payment Processing** - Multi-gateway payment integration (Razorpay)
+- **Notification System** - Email, SMS, and in-app notifications
+- **Video Streaming** - WebRTC and Zoom integration for virtual pooja sessions
+- **Security** - Rate limiting, encryption, and audit logging
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Technical Features
+- **Database** - PostgreSQL with Prisma ORM
+- **Caching** - Redis integration for performance
+- **Logging** - Winston-based structured logging
+- **Testing** - Comprehensive unit and integration tests
+- **Documentation** - OpenAPI/Swagger documentation
+- **Docker** - Containerized deployment
+- **CI/CD** - GitHub Actions workflow
 
-## Project setup
+## 📋 Prerequisites
 
+- Node.js 18+ 
+- PostgreSQL 14+
+- Redis 6+
+- Docker (optional)
+
+## 🛠️ Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd mantra-setu/backend/mantrasetu-backend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+   ```bash
+   cp env.example .env
+   ```
+   
+   Update the `.env` file with your configuration:
+   ```env
+   # Database
+   DATABASE_URL="postgresql://username:password@localhost:5432/mantrasetu"
+   
+   # JWT
+   JWT_SECRET="your-super-secret-jwt-key"
+   JWT_EXPIRES_IN="7d"
+   REFRESH_TOKEN_SECRET="your-super-secret-refresh-key"
+   REFRESH_TOKEN_EXPIRES_IN="30d"
+   
+   # Server
+   PORT=3000
+   NODE_ENV=development
+   
+   # Email (SMTP)
+   SMTP_HOST="smtp.gmail.com"
+   SMTP_PORT="587"
+   SMTP_USER="your-email@gmail.com"
+   SMTP_PASS="your-app-password"
+   
+   # Payment (Razorpay)
+   RAZORPAY_KEY_ID="your-razorpay-key-id"
+   RAZORPAY_KEY_SECRET="your-razorpay-key-secret"
+   
+   # SMS (Twilio)
+   TWILIO_ACCOUNT_SID="your-twilio-account-sid"
+   TWILIO_AUTH_TOKEN="your-twilio-auth-token"
+   TWILIO_PHONE_NUMBER="your-twilio-phone-number"
+   
+   # Video Streaming (Zoom)
+   ZOOM_API_KEY="your-zoom-api-key"
+   ZOOM_API_SECRET="your-zoom-api-secret"
+   ```
+
+4. **Database Setup**
+   ```bash
+   # Generate Prisma client
+   npm run db:generate
+   
+   # Run database migrations
+   npm run db:migrate
+   
+   # Seed database (optional)
+   npm run db:seed
+   ```
+
+## 🚀 Running the Application
+
+### Development
 ```bash
-$ npm install
+npm run start:dev
 ```
 
-## Compile and run the project
-
+### Production
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run build
+npm run start:prod
 ```
 
-## Run tests
-
+### Docker
 ```bash
-# unit tests
-$ npm run test
+# Development
+docker-compose -f docker-compose.dev.yml up -d
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Production
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
-## Deployment
+## 🧪 Testing
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+### Unit Tests
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Integration Tests
+```bash
+npm run test:e2e
+```
 
-## Resources
+### Test Coverage
+```bash
+npm run test:cov
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## 📚 API Documentation
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Once the application is running, you can access:
 
-## Support
+- **API Base URL**: `http://localhost:3000/api/v1`
+- **Health Check**: `http://localhost:3000/api/v1/health`
+- **Swagger Documentation**: `http://localhost:3000/api/docs` (if enabled)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 🔧 Available Scripts
 
-## Stay in touch
+```bash
+# Development
+npm run start:dev          # Start in development mode
+npm run start:debug        # Start in debug mode
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Building
+npm run build              # Build the application
+npm run start:prod         # Start in production mode
 
-## License
+# Database
+npm run db:generate        # Generate Prisma client
+npm run db:push            # Push schema to database
+npm run db:migrate         # Run database migrations
+npm run db:studio          # Open Prisma Studio
+npm run db:seed            # Seed the database
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+# Testing
+npm run test               # Run unit tests
+npm run test:watch         # Run tests in watch mode
+npm run test:cov           # Run tests with coverage
+npm run test:e2e           # Run end-to-end tests
+
+# Code Quality
+npm run lint               # Run ESLint
+npm run lint:fix           # Fix ESLint issues
+npm run format             # Format code with Prettier
+
+# Docker
+npm run build:docker       # Build Docker image
+npm run build:docker:prod  # Build production Docker image
+```
+
+## 🏗️ Project Structure
+
+```
+src/
+├── auth/                  # Authentication module
+│   ├── controllers/       # Auth controllers
+│   ├── services/         # Auth services
+│   ├── guards/           # Auth guards
+│   ├── strategies/       # JWT strategies
+│   └── decorators/       # Custom decorators
+├── users/                # User management module
+├── pandits/              # Pandit management module
+├── bookings/             # Booking system module
+├── payments/             # Payment processing module
+├── notifications/        # Notification system module
+├── streaming/            # Video streaming module
+├── security/             # Security utilities
+├── database/             # Database configuration
+├── common/               # Shared utilities
+└── test/                 # Test utilities
+```
+
+## 🔐 Security Features
+
+- **JWT Authentication** - Secure token-based authentication
+- **Role-Based Access Control** - Granular permissions system
+- **Rate Limiting** - API rate limiting and throttling
+- **Data Encryption** - Sensitive data encryption
+- **Audit Logging** - Comprehensive audit trail
+- **Input Validation** - Request validation and sanitization
+- **CORS Protection** - Cross-origin resource sharing
+- **Helmet Security** - Security headers
+
+## 📊 Monitoring & Logging
+
+- **Structured Logging** - Winston-based logging with multiple transports
+- **Request Tracking** - Request ID tracking for debugging
+- **Performance Monitoring** - Response time and error tracking
+- **Health Checks** - Application health monitoring
+- **Audit Trail** - User action tracking
+
+## 🚀 Deployment
+
+### Environment Variables
+Ensure all required environment variables are set in your deployment environment.
+
+### Database Migration
+Run database migrations before deploying:
+```bash
+npm run db:migrate
+```
+
+### Docker Deployment
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Kubernetes Deployment
+```bash
+kubectl apply -f k8s/production/
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for your changes
+5. Run the test suite
+6. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Contact the development team
+- Check the documentation
+
+## 🔄 API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/refresh` - Refresh token
+- `POST /api/v1/auth/logout` - User logout
+
+### Users
+- `GET /api/v1/users/profile` - Get user profile
+- `PUT /api/v1/users/profile` - Update user profile
+- `GET /api/v1/users/bookings` - Get user bookings
+- `GET /api/v1/users/notifications` - Get user notifications
+
+### Pandits
+- `GET /api/v1/pandits/search` - Search pandits
+- `GET /api/v1/pandits/:id` - Get pandit details
+- `POST /api/v1/pandits/profile` - Create pandit profile
+- `PUT /api/v1/pandits/profile/me` - Update pandit profile
+
+### Bookings
+- `POST /api/v1/bookings` - Create booking
+- `GET /api/v1/bookings/search` - Search bookings
+- `GET /api/v1/bookings/:id` - Get booking details
+- `PUT /api/v1/bookings/:id/cancel` - Cancel booking
+
+### Payments
+- `POST /api/v1/payments` - Create payment
+- `GET /api/v1/payments/search` - Search payments
+- `PUT /api/v1/payments/:id/process` - Process payment
+- `POST /api/v1/payments/webhooks/razorpay` - Razorpay webhook
+
+### Notifications
+- `GET /api/v1/notifications/me` - Get user notifications
+- `PUT /api/v1/notifications/:id/read` - Mark notification as read
+- `PUT /api/v1/notifications/read-all` - Mark all notifications as read
+
+### Streaming
+- `POST /api/v1/streaming/meetings` - Create meeting
+- `GET /api/v1/streaming/meetings/:id` - Get meeting details
+- `POST /api/v1/streaming/meetings/:id/join` - Join meeting
+- `PUT /api/v1/streaming/meetings/:id/end` - End meeting
+
+---
+
+**MantraSetu Backend** - Connecting tradition with technology 🕉️
