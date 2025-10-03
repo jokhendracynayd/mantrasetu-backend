@@ -38,19 +38,53 @@ async function bootstrap() {
     app.use(compression());
 
     // CORS configuration
-    if (configService.get('CORS_ENABLED') === 'true') {
+    const corsEnabled = configService.get('CORS_ENABLED');
+    const nodeEnv = configService.get('NODE_ENV') || 'development';
+    const isProduction = nodeEnv === 'production';
+    
+    // Enable CORS by default in production or if explicitly enabled
+    if (corsEnabled === 'true' || corsEnabled === true || isProduction) {
+      const corsOrigin = configService.get('CORS_ORIGIN');
+      
       app.enableCors({
         origin: [
-          configService.get('CORS_ORIGIN') || 'http://localhost:3035',
-          'http://localhost:3000', // Frontend development port
-          'http://localhost:3001', // Alternative frontend port
-          'https://mantrasetu-frontend.vercel.app', // Vercel frontend
-          'https://mantrasetu.com'
-        ],
+          // Production origins
+          'https://mantrasetu.com',
+          'https://www.mantrasetu.com',
+          'https://mantrasetu-frontend.vercel.app',
+          // Development origins
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'http://localhost:3035',
+          // Custom origin from env
+          ...(corsOrigin ? [corsOrigin] : []),
+        ].filter(Boolean), // Remove any undefined values
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+        allowedHeaders: [
+          'Content-Type', 
+          'Authorization', 
+          'X-Requested-With',
+          'X-Request-ID',
+          'Accept'
+        ],
+        exposedHeaders: ['X-Request-ID'],
+        optionsSuccessStatus: 200, // Some legacy browsers choke on 204
       });
+      
+      logger.log('CORS enabled with origins:', {
+        origins: [
+          'https://mantrasetu.com',
+          'https://www.mantrasetu.com',
+          'https://mantrasetu-frontend.vercel.app',
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'http://localhost:3035',
+          ...(corsOrigin ? [corsOrigin] : []),
+        ].filter(Boolean)
+      });
+    } else {
+      logger.warn('CORS is disabled. This may cause issues with frontend requests.');
     }
 
     // Global validation pipe
@@ -72,7 +106,6 @@ async function bootstrap() {
     app.useGlobalInterceptors(new LoggingInterceptor(appLogger));
 
     const port = configService.get('PORT') || 3035;
-    const nodeEnv = configService.get('NODE_ENV') || 'development';
 
     // Set global prefix for all routes
     app.setGlobalPrefix('api/v1');
