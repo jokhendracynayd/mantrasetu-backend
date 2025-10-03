@@ -44,7 +44,8 @@ async function bootstrap() {
           configService.get('CORS_ORIGIN') || 'http://localhost:3035',
           'http://localhost:3000', // Frontend development port
           'http://localhost:3001', // Alternative frontend port
-          'https://mantrasetu-frontend.vercel.app' // Vercel frontend
+          'https://mantrasetu-frontend.vercel.app', // Vercel frontend
+          'https://mantrasetu.com'
         ],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
