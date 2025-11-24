@@ -1,0 +1,134 @@
+services:
+  # MantraSetu API (Production)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mantrasetu-app-prod
+    restart: unless-stopped
+    environment:
+      # Database Configuration (External PostgreSQL)
+      DATABASE_URL: ${DATABASE_URL}
+      
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-30d}
+      
+      # Server Configuration
+      PORT: ${PORT:-3035}
+      NODE_ENV: production
+      
+      # CORS Configuration
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      FRONTEND_URL: ${FRONTEND_URL}
+      
+      # Application Configuration
+      APP_NAME: ${APP_NAME:-MantraSetu}
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      
+      # Email Configuration
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      
+      # Security Configuration
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-1000}
+      HELMET_ENABLED: ${HELMET_ENABLED:-true}
+      CORS_ENABLED: ${CORS_ENABLED:-true}
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      
+      # Audit & Logging Configuration
+      AUDIT_LOGGING_ENABLED: ${AUDIT_LOGGING_ENABLED:-true}
+      SECURITY_EVENT_LOGGING_ENABLED: ${SECURITY_EVENT_LOGGING_ENABLED:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FILE: ${LOG_FILE:-logs/app-prod.log}
+      
+      # Cache Configuration (Using memory cache for simple deployment)
+      CACHE_TYPE: memory
+      # REDIS_URL: ${REDIS_URL}
+      
+      # Payment Configuration
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      
+      # AWS Configuration
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      
+      # Twilio Configuration
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
+    ports:
+      - "${PORT:-3035}:${PORT:-3035}"
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+    networks:
+      - mantrasetu-network
+    # depends_on:
+    #   redis:
+    #     condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-3035}/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis Cache (Production) - Commented out for simple deployment
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: mantrasetu-redis-prod
+  #   restart: unless-stopped
+  #   command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - mantrasetu-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # Database Migration Service (Production)
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mantrasetu-migrate-prod
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    networks:
+      - mantrasetu-network
+    command: >
+      sh -c "
+        echo 'Running database migrations...' &&
+        npx prisma migrate deploy &&
+        echo 'Generating Prisma client...' &&
+        npx prisma generate &&
+        echo 'Database setup completed successfully!' &&
+        exit 0
+      "
+    restart: "no"
+
+# volumes:
+#   redis_data:
+#     driver: local
+#     name: mantrasetu_redis_prod_data
+
+networks:
+  mantrasetu-network:
+    driver: bridge
+    name: mantrasetu-prod-network
