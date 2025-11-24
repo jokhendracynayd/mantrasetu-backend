@@ -1,0 +1,110 @@
+services:
+  # PostgreSQL Database (commented out - using external server)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: mantrasetu-postgres-dev
+  #   environment:
+  #     POSTGRES_DB: mantrasetu_dev
+  #     POSTGRES_USER: mantrasetu_user
+  #     POSTGRES_PASSWORD: mantrasetu_password
+  #     POSTGRES_HOST_AUTH_METHOD: trust
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+  #   networks:
+  #     - mantrasetu-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U mantrasetu_user -d mantrasetu_dev"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # Redis Cache (commented out - using memory cache for now)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: mantrasetu-redis-dev
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - mantrasetu-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # Elasticsearch (commented out - will implement later)
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+  #   container_name: mantrasetu-elasticsearch-dev
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ports:
+  #     - "9200:9200"
+  #   volumes:
+  #     - elasticsearch_data:/usr/share/elasticsearch/data
+  #   networks:
+  #     - mantrasetu-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+
+  # Kibana (commented out - will implement later)
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.11.0
+  #   container_name: mantrasetu-kibana-dev
+  #   environment:
+  #     ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+  #   ports:
+  #     - "5601:5601"
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
+  #   networks:
+  #     - mantrasetu-network
+
+  # Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mantrasetu-app-dev
+    environment:
+      NODE_ENV: development
+      PORT: 3035
+      CACHE_TYPE: memory
+      # REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_EXPIRES_IN: 7d
+      REFRESH_TOKEN_SECRET: your-super-secret-refresh-key-change-in-production
+      REFRESH_TOKEN_EXPIRES_IN: 30d
+    ports:
+      - "3035:3035"
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+      - /app/node_modules
+    # depends_on:
+    #   redis:
+    #     condition: service_healthy
+    networks:
+      - mantrasetu-network
+    command: ["npm", "run", "start:dev"]
+
+volumes:
+  # postgres_data:
+  # redis_data:
+  # elasticsearch_data:
+  app_data:
+
+networks:
+  mantrasetu-network:
+    driver: bridge
