@@ -404,3 +404,18 @@ model Contact {
   @@map("contacts")
 }
 
+model Translation {
+  id          String   @id @default(cuid())
+  key         String   // Translation key (e.g., "header.home", "footer.services")
+  language    String   // Language code (e.g., "en", "hi", "ta", "te", "kn")
+  value       String   // Translated text
+  namespace   String   @default("common") // Namespace for organizing translations
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([key, language, namespace])
+  @@index([language])
+  @@index([namespace])
+  @@map("translations")
+}
+

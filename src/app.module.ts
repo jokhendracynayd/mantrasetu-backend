@@ -21,6 +21,7 @@ import { HomepageModule } from './homepage/homepage.module';
 import { ServicesModule } from './services/services.module';
 import { AdminModule } from './admin/admin.module';
 import { ContactModule } from './contact/contact.module';
+import { TranslationsModule } from './translations/translations.module';
 import { FilesController } from './common/controllers/files.controller';
 
 @Module({
@@ -54,6 +55,7 @@ import { FilesController } from './common/controllers/files.controller';
     ServicesModule,
     AdminModule,
     ContactModule,
+    TranslationsModule,
   ],
   controllers: [AppController, FilesController],
   providers: [
