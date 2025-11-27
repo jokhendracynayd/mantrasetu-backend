@@ -11,12 +11,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { AdminService } from '../services/admin.service';
+import { AdminService, AdminDashboardStats, UserManagementResponse, PanditManagementResponse } from '../services/admin.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole, Prisma } from '@prisma/client';
 import type { UserContext } from '../../auth/interfaces/auth.interface';
 import { AdminUserFilterDto, AdminPanditFilterDto, UpdateUserStatusDto, AdminServiceFilterDto } from '../dto/admin.dto';
 
@@ -100,21 +100,24 @@ export class AdminController {
 
   // Service Management
   @Get('services')
-  async getServices(@Query() filters: AdminServiceFilterDto) {
+  async getServices(@Query() filters: AdminServiceFilterDto): Promise<{
+    services: Array<Prisma.ServiceGetPayload<{ include: { _count: { select: { bookings: true } } } }>>;
+    pagination: { page: number; limit: number; total: number; pages: number };
+  }> {
     return this.adminService.getServices(filters);
   }
 
   @Get('services/:id')
-  async getServiceById(@Param('id') serviceId: string) {
+  async getServiceById(@Param('id') serviceId: string): Promise<Prisma.ServiceGetPayload<{ include: { _count: { select: { bookings: true } } } }>> {
     return this.adminService.getServiceById(serviceId);
   }
 
   @Post('services')
   @HttpCode(HttpStatus.CREATED)
   async createService(
-    @Body() createServiceDto: any,
+    @Body() createServiceDto: Prisma.ServiceCreateInput,
     @CurrentUser() currentUser: UserContext,
-  ) {
+  ): Promise<Prisma.ServiceGetPayload<{}>> {
     return this.adminService.createService(createServiceDto, currentUser);
   }
 
@@ -122,9 +125,9 @@ export class AdminController {
   @HttpCode(HttpStatus.OK)
   async updateService(
     @Param('id') serviceId: string,
-    @Body() updateServiceDto: any,
+    @Body() updateServiceDto: Prisma.ServiceUpdateInput,
     @CurrentUser() currentUser: UserContext,
-  ) {
+  ): Promise<Prisma.ServiceGetPayload<{}>> {
     return this.adminService.updateService(serviceId, updateServiceDto, currentUser);
   }
 
@@ -133,7 +136,7 @@ export class AdminController {
   async deleteService(
     @Param('id') serviceId: string,
     @CurrentUser() currentUser: UserContext,
-  ) {
+  ): Promise<{ message: string }> {
     return this.adminService.deleteService(serviceId, currentUser);
   }
 }

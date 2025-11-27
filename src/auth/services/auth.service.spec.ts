@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '../../database/prisma.service';
 import { TestUtils } from '../../test/test-utils';
 import { RegisterDto, LoginDto, ChangePasswordDto } from '../dto/auth.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole, Prisma } from '@prisma/client';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -65,9 +65,17 @@ describe('AuthService', () => {
         refreshToken: 'refresh-token',
       };
 
+      const mockRefreshToken: Prisma.RefreshTokenGetPayload<{}> = {
+        id: 'refresh-token-123',
+        userId: mockUser.id,
+        token: 'refresh-token',
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        isRevoked: false,
+        createdAt: new Date(),
+      };
       jest.spyOn(prismaService.user, 'findFirst').mockResolvedValue(null);
-      jest.spyOn(prismaService.user, 'create').mockResolvedValue(mockUser);
-      jest.spyOn(prismaService.refreshToken, 'create').mockResolvedValue({} as any);
+      jest.spyOn(prismaService.user, 'create').mockResolvedValue(mockUser as Prisma.UserGetPayload<{}>);
+      jest.spyOn(prismaService.refreshToken, 'create').mockResolvedValue(mockRefreshToken);
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue('token');
 
       const result = await service.register(registerDto);
@@ -113,9 +121,17 @@ describe('AuthService', () => {
       const mockUser = TestUtils.createMockUser();
       mockUser.passwordHash = 'hashed-password';
 
-      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(mockUser);
-      jest.spyOn(prismaService.user, 'update').mockResolvedValue(mockUser);
-      jest.spyOn(prismaService.refreshToken, 'create').mockResolvedValue({} as any);
+      const mockRefreshToken: Prisma.RefreshTokenGetPayload<{}> = {
+        id: 'refresh-token-123',
+        userId: mockUser.id,
+        token: 'refresh-token',
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        isRevoked: false,
+        createdAt: new Date(),
+      };
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(mockUser as Prisma.UserGetPayload<{}>);
+      jest.spyOn(prismaService.user, 'update').mockResolvedValue(mockUser as Prisma.UserGetPayload<{}>);
+      jest.spyOn(prismaService.refreshToken, 'create').mockResolvedValue(mockRefreshToken);
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue('token');
 
       // Mock bcrypt.compare

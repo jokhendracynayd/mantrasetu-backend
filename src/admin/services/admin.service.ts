@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { UserRole, BookingStatus, PaymentStatus } from '@prisma/client';
+import { UserRole, BookingStatus, PaymentStatus, Prisma } from '@prisma/client';
 import { UserContext } from '../../auth/interfaces/auth.interface';
 import { AdminUserFilterDto, AdminPanditFilterDto, AdminServiceFilterDto } from '../dto/admin.dto';
 
@@ -38,8 +38,56 @@ export interface PanditManagementFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
+type UserWithCounts = Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    email: true;
+    firstName: true;
+    lastName: true;
+    phone: true;
+    role: true;
+    isActive: true;
+    isVerified: true;
+    emailVerifiedAt: true;
+    phoneVerifiedAt: true;
+    lastLoginAt: true;
+    createdAt: true;
+    updatedAt: true;
+    _count: {
+      select: {
+        bookings: true;
+        payments: true;
+      };
+    };
+  };
+}>;
+
+type PanditWithUser = Prisma.PanditGetPayload<{
+  include: {
+    user: {
+      select: {
+        id: true;
+        email: true;
+        firstName: true;
+        lastName: true;
+        phone: true;
+        isActive: true;
+        isVerified: true;
+        lastLoginAt: true;
+        createdAt: true;
+      };
+    };
+    _count: {
+      select: {
+        bookings: true;
+        reviews: true;
+      };
+    };
+  };
+}>;
+
 export interface UserManagementResponse {
-  users: any[];
+  users: UserWithCounts[];
   pagination: {
     page: number;
     limit: number;
@@ -49,7 +97,7 @@ export interface UserManagementResponse {
 }
 
 export interface PanditManagementResponse {
-  pandits: any[];
+  pandits: PanditWithUser[];
   pagination: {
     page: number;
     limit: number;
@@ -143,7 +191,7 @@ export class AdminService {
       sortOrder = 'desc',
     } = filters;
 
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -167,8 +215,7 @@ export class AdminService {
     }
 
     const skip = (page - 1) * limit;
-    const orderBy: any = {};
-    orderBy[sortBy] = sortOrder;
+    const orderBy: Prisma.UserOrderByWithRelationInput = { [sortBy]: sortOrder } as Prisma.UserOrderByWithRelationInput;
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -361,7 +408,7 @@ export class AdminService {
       sortOrder = 'desc',
     } = filters;
 
-    const where: any = {};
+    const where: Prisma.PanditWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -382,8 +429,7 @@ export class AdminService {
     }
 
     const skip = (page - 1) * limit;
-    const orderBy: any = {};
-    orderBy[sortBy] = sortOrder;
+    const orderBy: Prisma.PanditOrderByWithRelationInput = { [sortBy]: sortOrder } as Prisma.PanditOrderByWithRelationInput;
 
     const [pandits, total] = await Promise.all([
       this.prisma.pandit.findMany({
@@ -936,7 +982,10 @@ export class AdminService {
   }
 
   // Service Management
-  async getServices(filters: AdminServiceFilterDto): Promise<any> {
+  async getServices(filters: AdminServiceFilterDto): Promise<{
+    services: Array<Prisma.ServiceGetPayload<{ include: { _count: { select: { bookings: true } } } }>>;
+    pagination: { page: number; limit: number; total: number; pages: number };
+  }> {
     const {
       search,
       category,
@@ -951,7 +1000,7 @@ export class AdminService {
       sortOrder = 'desc',
     } = filters;
 
-    const where: any = {};
+    const where: Prisma.ServiceWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -987,13 +1036,13 @@ export class AdminService {
       }
     }
 
-    const orderBy: any = {};
+    let orderBy: Prisma.ServiceOrderByWithRelationInput;
     if (sortBy === 'price') {
-      orderBy.basePrice = sortOrder;
+      orderBy = { basePrice: sortOrder };
     } else if (sortBy === 'duration') {
-      orderBy.durationMinutes = sortOrder;
+      orderBy = { durationMinutes: sortOrder };
     } else {
-      orderBy[sortBy] = sortOrder;
+      orderBy = { [sortBy]: sortOrder } as Prisma.ServiceOrderByWithRelationInput;
     }
 
     const skip = (page - 1) * limit;
@@ -1026,7 +1075,7 @@ export class AdminService {
     };
   }
 
-  async getServiceById(serviceId: string): Promise<any> {
+  async getServiceById(serviceId: string): Promise<Prisma.ServiceGetPayload<{ include: { _count: { select: { bookings: true } } } }>> {
     const service = await this.prisma.service.findUnique({
       where: { id: serviceId },
       include: {
@@ -1045,7 +1094,7 @@ export class AdminService {
     return service;
   }
 
-  async createService(createServiceDto: any, currentUser: UserContext): Promise<any> {
+  async createService(createServiceDto: Prisma.ServiceCreateInput, currentUser: UserContext): Promise<Prisma.ServiceGetPayload<{}>> {
     try {
       const service = await this.prisma.service.create({
         data: createServiceDto,
@@ -1068,7 +1117,7 @@ export class AdminService {
     }
   }
 
-  async updateService(serviceId: string, updateServiceDto: any, currentUser: UserContext): Promise<any> {
+  async updateService(serviceId: string, updateServiceDto: Prisma.ServiceUpdateInput, currentUser: UserContext): Promise<Prisma.ServiceGetPayload<{}>> {
     const existingService = await this.getServiceById(serviceId);
 
     try {
@@ -1095,7 +1144,7 @@ export class AdminService {
     }
   }
 
-  async deleteService(serviceId: string, currentUser: UserContext): Promise<any> {
+  async deleteService(serviceId: string, currentUser: UserContext): Promise<{ message: string }> {
     const existingService = await this.getServiceById(serviceId);
 
     try {

@@ -8,15 +8,15 @@ export class AdminUserFilterDto {
   search?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): UserRole | undefined => {
     if (value === '') return undefined;
-    return value;
+    return value as UserRole;
   })
   @IsEnum(UserRole)
   role?: UserRole;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): boolean | undefined => {
     if (value === 'true') return true;
     if (value === 'false') return false;
     if (value === '') return undefined;
@@ -25,7 +25,7 @@ export class AdminUserFilterDto {
   isActive?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): boolean | undefined => {
     if (value === 'true') return true;
     if (value === 'false') return false;
     if (value === '') return undefined;
@@ -34,21 +34,23 @@ export class AdminUserFilterDto {
   isVerified?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }): number => parseInt(String(value), 10))
   @IsNumber()
   page?: number;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }): number => parseInt(String(value), 10))
   @IsNumber()
   limit?: number;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }): string => String(value))
   sortBy?: string;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }): 'asc' | 'desc' => (value === 'asc' || value === 'desc' ? value : 'desc'))
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -58,7 +60,7 @@ export class AdminPanditFilterDto {
   search?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): boolean | undefined => {
     if (value === 'true') return true;
     if (value === 'false') return false;
     if (value === '') return undefined;
@@ -67,7 +69,7 @@ export class AdminPanditFilterDto {
   isVerified?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): boolean | undefined => {
     if (value === 'true') return true;
     if (value === 'false') return false;
     if (value === '') return undefined;
@@ -76,21 +78,23 @@ export class AdminPanditFilterDto {
   isActive?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }): number => parseInt(String(value), 10))
   @IsNumber()
   page?: number;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }): number => parseInt(String(value), 10))
   @IsNumber()
   limit?: number;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }): string => String(value))
   sortBy?: string;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }): 'asc' | 'desc' => (value === 'asc' || value === 'desc' ? value : 'desc'))
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -105,19 +109,20 @@ export class AdminServiceFilterDto {
   search?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): ServiceCategory | undefined => {
     if (value === '') return undefined;
-    return value;
+    return value as ServiceCategory;
   })
   @IsEnum(ServiceCategory)
   category?: ServiceCategory;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }): string => String(value))
   subcategory?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): boolean | undefined => {
     if (value === 'true') return true;
     if (value === 'false') return false;
     if (value === '') return undefined;
@@ -126,7 +131,7 @@ export class AdminServiceFilterDto {
   isVirtual?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): boolean | undefined => {
     if (value === 'true') return true;
     if (value === 'false') return false;
     if (value === '') return undefined;
@@ -135,30 +140,32 @@ export class AdminServiceFilterDto {
   isActive?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }): number => parseInt(String(value), 10))
   @IsNumber()
   minPrice?: number;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }): number => parseInt(String(value), 10))
   @IsNumber()
   maxPrice?: number;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }): number => parseInt(String(value), 10) || 1)
   @IsNumber()
   page?: number = 1;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }): number => parseInt(String(value), 10) || 10)
   @IsNumber()
   limit?: number = 10;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }): string => String(value || 'createdAt'))
   sortBy?: string = 'createdAt';
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }): 'asc' | 'desc' => (value === 'asc' || value === 'desc' ? value : 'desc'))
   sortOrder?: 'asc' | 'desc' = 'desc';
 }
