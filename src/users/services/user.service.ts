@@ -120,6 +120,62 @@ export class UserService {
     return user;
   }
 
+  async uploadProfileImage(userId: string, file: Express.Multer.File) {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Construct the file path
+    const filePath = `uploads/users/${userId}/${file.filename}`;
+    const fullPath = path.join(process.cwd(), filePath);
+    
+    // Verify file exists
+    if (!fs.existsSync(fullPath)) {
+      throw new NotFoundException('Uploaded file not found');
+    }
+    
+    // Get old profile image path if exists (for cleanup)
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { profileImageUrl: true },
+    });
+    
+    // Update user profile with image URL
+    const profileImageUrl = `/uploads/users/${userId}/${file.filename}`;
+    
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        profileImageUrl,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        profileImageUrl: true,
+      },
+    });
+    
+    // Optionally delete old profile image if it exists and is different
+    if (user?.profileImageUrl && user.profileImageUrl !== profileImageUrl) {
+      try {
+        const oldImagePath = path.join(process.cwd(), user.profileImageUrl.replace(/^\//, ''));
+        if (fs.existsSync(oldImagePath) && oldImagePath.includes('uploads/users')) {
+          fs.unlinkSync(oldImagePath);
+        }
+      } catch (error) {
+        // Log but don't fail if old image deletion fails
+        console.warn('Failed to delete old profile image:', error);
+      }
+    }
+    
+    return {
+      message: 'Profile image uploaded successfully',
+      imageUrl: updatedUser.profileImageUrl,
+      user: updatedUser,
+    };
+  }
+
   async getAddresses(userId: string) {
     return this.prisma.address.findMany({
       where: { userId },

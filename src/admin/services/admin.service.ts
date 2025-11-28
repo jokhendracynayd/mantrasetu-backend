@@ -4,6 +4,38 @@ import { UserRole, BookingStatus, PaymentStatus, Prisma } from '@prisma/client';
 import { UserContext } from '../../auth/interfaces/auth.interface';
 import { AdminUserFilterDto, AdminPanditFilterDto, AdminServiceFilterDto } from '../dto/admin.dto';
 
+// Helper function to convert Prisma input types to JSON-serializable objects
+function toJsonValue(value: any): any {
+  if (value === null || value === undefined) {
+    return value;
+  }
+  
+  // Check if it's a Decimal-like object (has toNumber and toString methods)
+  if (typeof value === 'object' && value !== null && typeof value.toNumber === 'function' && typeof value.toString === 'function') {
+    return value.toString();
+  }
+  
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  
+  if (Array.isArray(value)) {
+    return value.map(item => toJsonValue(item));
+  }
+  
+  if (typeof value === 'object') {
+    const result: any = {};
+    for (const key in value) {
+      if (value.hasOwnProperty(key)) {
+        result[key] = toJsonValue(value[key]);
+      }
+    }
+    return result;
+  }
+  
+  return value;
+}
+
 export interface AdminDashboardStats {
   totalUsers: number;
   totalPandits: number;
@@ -415,7 +447,7 @@ export class AdminService {
         { user: { firstName: { contains: search, mode: 'insensitive' } } },
         { user: { lastName: { contains: search, mode: 'insensitive' } } },
         { user: { email: { contains: search, mode: 'insensitive' } } },
-        { specialization: { contains: search, mode: 'insensitive' } },
+        { specialization: { hasSome: [search] } },
         { bio: { contains: search, mode: 'insensitive' } },
       ];
     }
@@ -1107,7 +1139,7 @@ export class AdminService {
           action: 'CREATE_SERVICE',
           resource: 'Service',
           resourceId: service.id,
-          newValues: createServiceDto,
+          newValues: toJsonValue(createServiceDto),
         },
       });
 
@@ -1133,8 +1165,8 @@ export class AdminService {
           action: 'UPDATE_SERVICE',
           resource: 'Service',
           resourceId: serviceId,
-          oldValues: existingService,
-          newValues: updateServiceDto,
+          oldValues: toJsonValue(existingService),
+          newValues: toJsonValue(updateServiceDto),
         },
       });
 

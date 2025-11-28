@@ -146,8 +146,23 @@ export class PanditController {
       destination: (req, file, cb) => {
         const fs = require('fs');
         // Get userId from request (set by JwtAuthGuard)
-        const userId = (req as any).user?.userId || (req as any).user?.id;
+        // Ensure we use userId, not email or any other field
+        const user = (req as any).user;
+        let userId: string | null = null;
+        
+        if (user) {
+          // UserContext has userId property
+          userId = user.userId || null;
+          // Validate userId is not an email (should be UUID or similar)
+          if (userId && userId.includes('@')) {
+            console.error('Invalid userId detected (appears to be email):', userId);
+            userId = null;
+          }
+        }
+        
+        // Only use userId if it's valid, otherwise use root directory
         const uploadPath = userId ? `uploads/pandits/${userId}` : 'uploads/pandits';
+        
         // Create directory if it doesn't exist
         if (!fs.existsSync(uploadPath)) {
           fs.mkdirSync(uploadPath, { recursive: true });

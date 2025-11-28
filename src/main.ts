@@ -121,8 +121,11 @@ async function bootstrap() {
 
     const port = configService.get('PORT') || 3035;
 
-    // Set global prefix for all routes
-    app.setGlobalPrefix('api/v1');
+    // Set global prefix for all routes, but exclude uploads routes
+    // ServeStaticModule already serves files at /uploads/* directly
+    app.setGlobalPrefix('api/v1', {
+      exclude: ['uploads/(.*)'],
+    });
 
     // Swagger configuration
     const config = new DocumentBuilder()

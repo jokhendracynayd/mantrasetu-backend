@@ -131,6 +131,51 @@ export class PanditService {
         },
       });
 
+      // Move files to userId subdirectory and update paths if files exist
+      const fs = require('fs');
+      const path = require('path');
+      const updatedVerificationDocuments: any = { ...verificationDocuments };
+      
+      if (files && Object.keys(verificationDocuments).length > 0) {
+        const userIdDir = `uploads/pandits/${user.id}`;
+        // Create userId subdirectory
+        if (!fs.existsSync(userIdDir)) {
+          fs.mkdirSync(userIdDir, { recursive: true });
+        }
+
+        // Move files and update paths
+        const moveFile = (filePath: string, fieldName: string) => {
+          if (!filePath) return null;
+          
+          const oldPath = path.join(process.cwd(), filePath.replace(/^\//, ''));
+          const filename = path.basename(filePath);
+          const newPath = path.join(process.cwd(), userIdDir, filename);
+          
+          try {
+            if (fs.existsSync(oldPath)) {
+              fs.renameSync(oldPath, newPath);
+              return `/uploads/pandits/${user.id}/${filename}`;
+            } else {
+              console.warn(`File not found at ${oldPath}, keeping original path`);
+              return filePath;
+            }
+          } catch (error) {
+            console.error(`Error moving file ${fieldName}:`, error);
+            return filePath; // Return original path if move fails
+          }
+        };
+
+        if (verificationDocuments.certificate) {
+          updatedVerificationDocuments.certificate = moveFile(verificationDocuments.certificate, 'certificate');
+        }
+        if (verificationDocuments.idProof) {
+          updatedVerificationDocuments.idProof = moveFile(verificationDocuments.idProof, 'idProof');
+        }
+        if (verificationDocuments.photo) {
+          updatedVerificationDocuments.photo = moveFile(verificationDocuments.photo, 'photo');
+        }
+      }
+
       // Create pandit profile
       const pandit = await tx.pandit.create({
         data: {
@@ -144,7 +189,7 @@ export class PanditService {
           bio: panditData.bio && panditData.bio.trim() !== '' ? panditData.bio.trim() : null,
           education: panditData.education && panditData.education.trim() !== '' ? panditData.education.trim() : null,
           achievements: achievements,
-          verificationDocuments: verificationDocumentsJson,
+          verificationDocuments: Object.keys(updatedVerificationDocuments).length > 0 ? updatedVerificationDocuments : null,
           isVerified: false, // Will need admin verification
         },
         include: {
