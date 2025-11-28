@@ -9,8 +9,13 @@ import {
   Query, 
   UseGuards,
   ParseIntPipe,
-  DefaultValuePipe
+  DefaultValuePipe,
+  UseInterceptors,
+  BadRequestException,
+  UploadedFile
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 import { UserService } from '../services/user.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -36,6 +41,62 @@ export class UserController {
     @Body() updateProfileDto: UpdateProfileDto,
   ) {
     return this.userService.updateProfile(user.userId, updateProfileDto);
+  }
+
+  @Post('profile/image')
+  @UseInterceptors(FileInterceptor('image', {
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        const fs = require('fs');
+        const user = (req as any).user;
+        let userId: string | null = null;
+        
+        if (user) {
+          // UserContext has userId property
+          userId = user.userId || null;
+          // Validate userId is not an email (should be UUID or similar)
+          if (userId && userId.includes('@')) {
+            console.error('Invalid userId detected (appears to be email):', userId);
+            cb(new BadRequestException('Invalid user ID'), '');
+            return;
+          }
+        }
+        
+        // Only use userId if it's valid, otherwise use root directory
+        const uploadPath = userId ? `uploads/users/${userId}` : 'uploads/users';
+        
+        // Create directory if it doesn't exist
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = file.originalname.split('.').pop();
+        cb(null, `profile-${uniqueSuffix}.${ext}`);
+      },
+    }),
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new BadRequestException('Invalid file type. Only images (JPEG, PNG, JPG, WEBP) are allowed.'), false);
+      }
+    },
+  }))
+  async uploadProfileImage(
+    @CurrentUser() user: UserContext,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.userService.uploadProfileImage(user.userId, file);
   }
 
   @Get('addresses')

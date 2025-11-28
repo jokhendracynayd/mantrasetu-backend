@@ -44,6 +44,22 @@ export class LoggingInterceptor implements NestInterceptor {
         const duration = Date.now() - startTime;
         const { statusCode } = response;
 
+        // Calculate response size safely
+        // For file responses (res.sendFile), data is undefined
+        let responseSize = 0;
+        if (data !== undefined && data !== null) {
+          try {
+            const stringified = JSON.stringify(data);
+            responseSize = stringified ? stringified.length : 0;
+          } catch (error) {
+            // If data can't be stringified (e.g., circular references, binary data), use 0
+            responseSize = 0;
+          }
+        }
+        // Note: For file responses (res.sendFile), data is undefined
+        // Content-Length header may not be available immediately, so we use 0
+        // The actual file size will be logged by Express's built-in logging if enabled
+
         // Log successful response
         this.logger.log({
           message: 'Request Completed',
@@ -52,7 +68,7 @@ export class LoggingInterceptor implements NestInterceptor {
           url,
           statusCode,
           duration: `${duration}ms`,
-          responseSize: JSON.stringify(data).length,
+          responseSize,
           userId,
           timestamp: new Date().toISOString(),
         });
