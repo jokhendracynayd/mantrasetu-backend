@@ -110,6 +110,52 @@ export interface PanditManagementResponse {
 export class AdminService {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Converts Prisma input types to JSON-serializable format for audit logs
+   * Handles Decimal types and other non-serializable values
+   */
+  private serializeForAuditLog(data: any): any {
+    if (data === null || data === undefined) {
+      return data;
+    }
+
+    if (typeof data === 'object') {
+      if (data instanceof Date) {
+        return data.toISOString();
+      }
+
+      // Handle Decimal types (Prisma Decimal)
+      if (data && typeof data === 'object' && 'toNumber' in data) {
+        return data.toNumber();
+      }
+
+      // Handle DecimalFieldUpdateOperationsInput
+      if (data && typeof data === 'object' && 'set' in data) {
+        const setValue = data.set;
+        if (setValue && typeof setValue === 'object' && 'toNumber' in setValue) {
+          return { set: setValue.toNumber() };
+        }
+        return { set: typeof setValue === 'number' ? setValue : String(setValue) };
+      }
+
+      // Handle arrays
+      if (Array.isArray(data)) {
+        return data.map(item => this.serializeForAuditLog(item));
+      }
+
+      // Handle plain objects
+      const serialized: any = {};
+      for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          serialized[key] = this.serializeForAuditLog(data[key]);
+        }
+      }
+      return serialized;
+    }
+
+    return data;
+  }
+
   async getDashboardStats(): Promise<AdminDashboardStats> {
     const [
       totalUsers,
@@ -415,7 +461,9 @@ export class AdminService {
         { user: { firstName: { contains: search, mode: 'insensitive' } } },
         { user: { lastName: { contains: search, mode: 'insensitive' } } },
         { user: { email: { contains: search, mode: 'insensitive' } } },
-        { specialization: { contains: search, mode: 'insensitive' } },
+        // Note: specialization is a String[] array, so we use hasSome for exact match
+        // Case-insensitive search is not directly supported for array fields in Prisma
+        { specialization: { hasSome: [search] } },
         { bio: { contains: search, mode: 'insensitive' } },
       ];
     }
@@ -1100,6 +1148,9 @@ export class AdminService {
         data: createServiceDto,
       });
 
+      // Convert DTO to JSON-serializable format for audit log
+      const serializedDto = this.serializeForAuditLog(createServiceDto);
+
       // Log the action
       await this.prisma.auditLog.create({
         data: {
@@ -1107,7 +1158,7 @@ export class AdminService {
           action: 'CREATE_SERVICE',
           resource: 'Service',
           resourceId: service.id,
-          newValues: createServiceDto,
+          newValues: serializedDto,
         },
       });
 
@@ -1126,6 +1177,9 @@ export class AdminService {
         data: updateServiceDto,
       });
 
+      // Convert DTO to JSON-serializable format for audit log
+      const serializedDto = this.serializeForAuditLog(updateServiceDto);
+
       // Log the action
       await this.prisma.auditLog.create({
         data: {
@@ -1134,7 +1188,7 @@ export class AdminService {
           resource: 'Service',
           resourceId: serviceId,
           oldValues: existingService,
-          newValues: updateServiceDto,
+          newValues: serializedDto,
         },
       });
 
